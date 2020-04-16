@@ -65,13 +65,9 @@ var saveTasks = function() {
 };
 
 $(".list-group").on("click", "p", function() {
-  var text = $(this)
-  .text()
-  .trim();
+  var text = $(this).text().trim();
 
-  var textInput = $("<textarea>")
-  .addClass("form-control")
-  .val(text);
+  var textInput = $("<textarea>").addClass("form-control").val(text);
 
   $(this).replaceWith(textInput);
 
@@ -83,28 +79,19 @@ $(".list-group").on("click", "p", function() {
 
   $(".list-group").on("blur", "textarea", function() {
     // get the textarea's current value/text
-    var text = $(this)
-    .val()
-    .trim();
+    var text = $(this).val().trim();
 
     // get the parent ul's id attribute
-    var status = $(this)
-    .closest(".list-group")
-    .attr("id")
-    .replace("list-", "");
+    var status = $(this).closest(".list-group").attr("id").replace("list-", "");
 
     // get the task's position in the list of other li elements
-    var index = $(this)
-    .closest(".list-group-item")
-    .index();
+    var index = $(this).closest(".list-group-item").index();
 
     tasks[status][index].text = text;
     saveTasks();
 
     // recreate p element
-    var taskP = $("<p>")
-    .addClass("m-1")
-    .text(text);
+    var taskP = $("<p>").addClass("m-1").text(text);
 
     // replace textarea with p element
     $(this).replaceWith(taskP);
@@ -167,16 +154,19 @@ $(".card .list-group").sortable({
   tolerance: "pointer",
   helper: "clone",
   activate: function(event) {
-    console.log("activate", this);
+    $(this).addClass("dropver");
+    $(".bottom-trash").addClass("bottom-trash-drag");
   },
   deactivate: function(event) {
-    console.log("deactivate", this);
+    $(this).removeClass("dropver");
+    $(".bottom-trash").removeClass("bottom-trash-drag");
   },
   over: function(event) {
-    console.log("over", event.target);
+    $(event.target).addClass("dropover-active");
+
   },
   out: function(event) {
-    console.log("out", event.target);
+    $(event.target).addClass("dropover-active");
   },
   update: function(event) {
 
@@ -185,15 +175,9 @@ $(".card .list-group").sortable({
 
     // loop over current set of children in sortable list
     $(this).children().each(function() {
-      var text = $(this)
-        .find("p")
-        .text()
-        .trim();
+      var text = $(this).find("p").text().trim();
     
-      var date = $(this)
-        .find("span")
-        .text()
-        .trim();
+      var date = $(this).find("span").text().trim();
 
       // add task data to the temp array as an object
       tempArr.push({
@@ -203,15 +187,12 @@ $(".card .list-group").sortable({
     });
   
     // trim down list's ID to match object property
-    var arrName = $(this)
-      .attr("id")
-      .replace("list-", "");
+    var arrName = $(this).attr("id").replace("list-", "");
 
     // update array on tasks object and save
     tasks[arrName] = tempArr;
     saveTasks();
     
-    console.log(tempArr);
   }
 });
 
@@ -228,7 +209,7 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -253,14 +234,14 @@ $("#trash").droppable({
   accept: ".card .list-group-item",
   tolerance: "touch",
   drop: function(event, ui) {
-    console.log("drop");
+    $(".bottom-trash").removeClass("bottom-trash-active");
     ui.draggable.remove();
   },
   over: function(event, ui) {
-    console.log("over");
+    $(".bottom-trash").addClass("bottom-trash-active");
   },
   out: function(event, ui) {
-    console.log("out");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   }
 });
 
@@ -275,6 +256,12 @@ $("#remove-tasks").on("click", function() {
 
 // load tasks for the first time
 loadTasks();
+
+setInterval(function() {
+ $(".card .list-group-item").each(function (el) {
+   auditTask(el);
+ });
+}, (1000 * 60) * 30);
 
 
 
